@@ -53,7 +53,7 @@ async function pedidosEmAberto(orderId) {
         const verifOrder = await crud.get("Orders");
         for (let i = 0; i < verifOrder.length; i++) {
             if (verifOrder[i].id == orderId) {
-                if (verifOrder[i].status == "Aberto") {
+                if (verifOrder[i].status == "Fechado") {
                     return true;
                 }
             }

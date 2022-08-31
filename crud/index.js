@@ -1,4 +1,5 @@
 const { initializeApp } = require('firebase/app');
+const { writeBatch } = require("firebase/firestore");
 const {
     getFirestore,
     collection,

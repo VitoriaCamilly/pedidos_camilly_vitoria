@@ -7,8 +7,9 @@ router.post("/", async (req, res) => {
     res.json(dadosSalvos);
 });
 
-router.post("/fechar", async (req, res) => {
-    const dadosSalvos = await ordersHandler.fecharPedido(req.body);
+router.post("/:cod", async (req, res) => {
+    const dadosSalvos = await ordersHandler.fecharPedido(req.params.cod);
+    console.log("base", dadosSalvos);
     res.json(dadosSalvos);
 });
 
