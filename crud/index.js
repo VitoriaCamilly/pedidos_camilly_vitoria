@@ -97,10 +97,8 @@ async function getById(Tablename, id) {
 }
 
 async function remove(Tablename, id) {
-    const dado = await deleteDoc(doc(db, Tablename, id));
-    return {
-        message: `${id} deleted`
-    }
+    const dados = await deleteDoc(doc(db, Tablename, id));
+    return dados;
 }
 
 module.exports = {

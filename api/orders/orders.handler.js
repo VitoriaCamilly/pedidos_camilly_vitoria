@@ -88,6 +88,7 @@ async function pedidosEmAberto(userId) {
 }
 
 async function verificarPedido(orderId) {
+    console.log(orderId);
     let existe = false;
     try {
         await crud.getById(nomeTabela, orderId);

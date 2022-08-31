@@ -7,6 +7,11 @@ router.post("/", async (req, res) => {
     res.json(dadosSalvos);
 });
 
+router.post("/remover", async (req, res) => {
+    const dadosSalvos = await orderproductsHandler.removerProdutos(req.body);
+    res.json(dadosSalvos);
+});
+
 router.get("/", async (req, res) => {
     const dados = await orderproductsHandler.mostrarPedidos();
     res.json(dados);
