@@ -7,8 +7,8 @@ router.post("/", async (req, res) => {
     res.json(dadosSalvos);
 });
 
-router.post("/remover", async (req, res) => {
-    const dadosSalvos = await orderproductsHandler.removerProdutos(req.body);
+router.delete("/:cod", async (req, res) => {
+    const dadosSalvos = await orderproductsHandler.removerProdutos(req.params.cod, req.body);
     res.json(dadosSalvos);
 });
 

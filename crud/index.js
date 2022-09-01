@@ -101,6 +101,7 @@ async function remove(Tablename, id) {
     return dados;
 }
 
+
 module.exports = {
     save,
     get,

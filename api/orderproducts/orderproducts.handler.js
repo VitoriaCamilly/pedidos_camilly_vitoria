@@ -1,6 +1,5 @@
 const crud = require("../../crud");
 const nomeTabela = "OrdersProducts";
-let contador = 1; let number; let status; let userId; let dado;
 
 async function adicionarProdutos(dados = { productId: [], orderId: "" }) {
     if (!dados.orderId) {
@@ -24,7 +23,7 @@ async function adicionarProdutos(dados = { productId: [], orderId: "" }) {
             situacao: "Produto indisponível"
         }
     }
-    if (await verificarPedido(dados.orderId)) {
+    if (await verificarPedidoOrder(dados.orderId)) {
         return {
             error: "0004",
             message: "Not found",
@@ -42,7 +41,7 @@ async function adicionarProdutos(dados = { productId: [], orderId: "" }) {
     return pedidos;
 }
 
-async function removerProdutos(dados = { productId: [], orderproductsId: "" }) {
+async function removerProdutos(productId, dados = { orderproductsId: "" }) {
     if (!dados.orderproductsId) {
         return {
             error: "0001",
@@ -50,14 +49,14 @@ async function removerProdutos(dados = { productId: [], orderproductsId: "" }) {
             camposNecessarios: ["orderproductsId"]
         }
     }
-    if (!dados.productId) {
+    if (!productId) {
         return {
             error: "0002",
             message: "É necessário preencher os parametros da requisição!",
             camposNecessarios: ["productId"]
         }
     }
-    if (await verificarListaProdutos(dados.productId)) {
+    if (await verificarProduto(productId)) {
         return {
             error: "0003",
             message: "Not found",
@@ -71,7 +70,7 @@ async function removerProdutos(dados = { productId: [], orderproductsId: "" }) {
             situacao: "Este pedido não existe"
         }
     }
-    if (await pedidosEmAberto(dados.orderproductsId.orderId)) {
+    if (await pedidosEmRemove(dados.orderproductsId)) {
         return {
             error: "0005",
             message: "Not found",
@@ -79,29 +78,39 @@ async function removerProdutos(dados = { productId: [], orderproductsId: "" }) {
         }
     }
 
-    const removido = remover(dados.productId, dados.orderproductsId);
-    return removido;
-}
-
-
-async function remover(productId, orderproductsId) {
-    console.log("teste", productId, orderproductsId)
-    //     let numeros = [];
-    //     for (let i = 0; i < listaScore.length; i++) {
-    //         numeros.push(parseInt(listaScore[i]));
-    //     }
-    let lista = await crud.get(nomeTabela);
-    console.log("teste2", lista);
-    for(let i = 0; i < lista.length; i++){
-        console.log("AAAAAAAAAAA");
-        console.log("BBBBBBBBBB", lista[i].productId);
-        console.log("CCCCCCC", productId);
-        if(lista[i].productId == productId){
-            let variavel = numeros.indexOf(i);
-            console.log("vari", variavel);
+    const removido = await remover(productId, dados.orderproductsId);
+    console.log("rem", removido);
+    if(removido == undefined){
+        return {
+            error: "0006",
+            message: "Not found",
+            situacao: "Este pedido está zerado! Documento removido!"
         }
     }
-    // return variavel;
+    const variavel = await crud.getById(nomeTabela, dados.orderproductsId);
+    console.log("var1", variavel);
+    variavel.productId = removido;
+    console.log("var2", variavel);
+    await crud.save(nomeTabela, dados.orderproductsId, variavel);
+    return variavel;
+}
+
+async function remover(productId, orderproductsId) {
+    let newProduto = [];
+    let lista = await crud.getById(nomeTabela, orderproductsId);
+    for (let i = 0; i < lista.productId.length; i++) {
+        if (lista.productId[i] == productId) {
+            const dados = await crud.remove(nomeTabela, productId);
+        } else {
+            newProduto.push(lista.productId[i]);
+        }
+    }
+    if(newProduto.length < 1){
+        console.log("entrou aqui");
+        const res = await crud.remove(nomeTabela, orderproductsId);
+        return res;
+    }
+    return newProduto;
 }
 
 async function mostrarPedidos() {
@@ -110,6 +119,7 @@ async function mostrarPedidos() {
 }
 
 async function pedidosEmAberto(orderId) {
+    console.log("order", orderId)
     let existe = false;
     try {
         const verifOrder = await crud.get("Orders");
@@ -127,16 +137,46 @@ async function pedidosEmAberto(orderId) {
     return existe;
 }
 
+async function pedidosEmRemove(orderproductsId) {
+    let existe = false;
+    let newProd = await crud.getById(nomeTabela, orderproductsId);
+    try {
+        const verifOrder = await crud.get("Orders");
+        for (let i = 0; i < verifOrder.length; i++) {
+            if (verifOrder[i].id == newProd.orderId) {
+                if (verifOrder[i].status == "Fechado") {
+                    return true;
+                }
+            }
+        }
+    } catch (erro) {
+        existe = true
+        return existe;
+    }
+    return existe;
+}
+
 async function verificarListaProdutos(list = []) {
     let naoCadastrado = false;
-    for(const id of list){
-        try{
-        await crud.getById("Products", id);
-        }catch(erro){
+    for (const id of list) {
+        try {
+            await crud.getById("Products", id);
+        } catch (erro) {
             naoCadastrado = true
             return naoCadastrado;
         }
     }
+    return naoCadastrado;
+}
+
+async function verificarProduto(productId) {
+    let naoCadastrado = false;
+        try {
+            await crud.getById("Products", productId);
+        } catch (erro) {
+            naoCadastrado = true
+            return naoCadastrado;
+        }
     return naoCadastrado;
 }
 
@@ -145,6 +185,17 @@ async function verificarPedido(orderproductsId) {
     let existe = false;
     try {
         await crud.getById("OrdersProducts", orderproductsId);
+    } catch (erro) {
+        existe = true
+        return existe;
+    }
+    return existe;
+}
+
+async function verificarPedidoOrder(orderId) {
+    let existe = false;
+    try {
+        await crud.getById("Orders", orderId);
     } catch (erro) {
         existe = true
         return existe;
