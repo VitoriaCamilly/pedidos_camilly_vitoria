@@ -39,6 +39,7 @@ async function adicionarProdutos(dados = { listProducts: {}, orderId: "" }) {
         }
     }
     if (await mesmoPedido(dados.orderId)) {
+        await adicionarQuantidade(dados.listProducts);
         const add = await adicionarMesmo(dados);
         return add;
     } else {
@@ -245,16 +246,12 @@ async function verificarPedidoOrder(orderId) {
 }
 
 async function adicionarQuantidade(list) {
-    // console.log(list);
-    // const newList = [];
-    // for(let i = 0; i < list.length; i++){
-    //     newList.push(list[i].productId);
-    // }
-    // const countMap = Object.create(null);
-    // for (const element of newList) {
-    //     countMap[element] = (countMap[element] || 0) + 1;
-    // }
-    // return countMap;
+    console.log("liss", list);
+    const newList = [];
+    for (let i = 0; i < list.length; i++) {
+        newList.push(list[i].quantity); 
+        console.log("liss2", list[i].quantity);
+    }
 }
 
 module.exports = {
