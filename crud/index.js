@@ -28,6 +28,8 @@ const db = getFirestore();
 
 async function save(Tablename, id, dado) {
     if (id) {
+        // const newQtdd = await somarQtd(dado.listProducts);
+        // console.log("nova", newQtdd);
         const referenceEntity = await setDoc(doc(db, Tablename, id), dado);
         const savedData = {
             ...dado,
@@ -43,6 +45,16 @@ async function save(Tablename, id, dado) {
         return savedData;
     }
 }
+
+// async function somarQtd(dados) {
+//     console.log("SomandoQTD", dados);
+//     const newList = [];
+//     const newQtd = 0;
+//     for (let i = 0; i < dados.length; i++) {
+//         newList.push(dados[i].productId);
+//     }
+//     return newQtd;
+// }
 
 async function get(Tablename) {
     const TableRef = collection(db, Tablename);

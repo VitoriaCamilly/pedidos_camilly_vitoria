@@ -48,24 +48,24 @@ async function adicionarProdutos(dados = { listProducts: {}, orderId: "" }) {
     }
 }
 
-async function adicionarMesmo(dados){
+async function adicionarMesmo(dados) {
     const listaOrdersProducts = await crud.get(nomeTabela);
-    if(listaOrdersProducts.length < 1){
+    if (listaOrdersProducts.length < 1) {
         const pedidos = await crud.save(nomeTabela, undefined, dados);
         return pedidos;
     }
     const newList = [];
     for (let i = 0; i < listaOrdersProducts.length; i++) {
-        newList.push(listaOrdersProducts[i].orderId); 
-        if(newList[i] == dados.orderId){
+        newList.push(listaOrdersProducts[i].orderId);
+        if (newList[i] == dados.orderId) {
             const pedidos = await crud.save(nomeTabela, listaOrdersProducts[i].id, dados);
             return pedidos;
         }
-        
+
     }
 }
 
-async function removerProdutos(productId, dados = { orderproductsId: "" }) {
+async function removerProdutos(dados = { listProducts: {}, orderproductsId: "" }) {
     if (!dados.orderproductsId) {
         return {
             error: "0001",
@@ -73,20 +73,22 @@ async function removerProdutos(productId, dados = { orderproductsId: "" }) {
             camposNecessarios: ["orderproductsId"]
         }
     }
-    if (!productId) {
+    if (!dados.listProducts) {
         return {
             error: "0002",
             message: "É necessário preencher os parametros da requisição!",
-            camposNecessarios: ["productId"]
+            camposNecessarios: ["listProducts"]
         }
     }
-    if (await verificarProduto(productId)) {
+
+    if (await verificarListaProdutos(dados.listProducts)) {
         return {
             error: "0003",
             message: "Not found",
             situacao: "Produto indisponível"
         }
     }
+
     if (await verificarPedido(dados.orderproductsId)) {
         return {
             error: "0004",
@@ -94,6 +96,7 @@ async function removerProdutos(productId, dados = { orderproductsId: "" }) {
             situacao: "Este pedido não existe"
         }
     }
+
     if (await pedidosEmRemove(dados.orderproductsId)) {
         return {
             error: "0005",
@@ -102,7 +105,7 @@ async function removerProdutos(productId, dados = { orderproductsId: "" }) {
         }
     }
 
-    const removido = await remover(productId, dados.orderproductsId);
+    const removido = await remover(dados);
     console.log("rem", removido);
     if (removido == undefined) {
         return {
@@ -119,21 +122,26 @@ async function removerProdutos(productId, dados = { orderproductsId: "" }) {
     return variavel;
 }
 
-async function remover(productId, orderproductsId) {
+async function remover(dados) {
     let newProduto = [];
-    let lista = await crud.getById(nomeTabela, orderproductsId);
-    for (let i = 0; i < lista.productId.length; i++) {
-        if (lista.productId[i] == productId) {
-            const dados = await crud.remove(nomeTabela, productId);
-        } else {
-            newProduto.push(lista.productId[i]);
-        }
+    let lista = await crud.getById(nomeTabela, dados.orderproductsId);
+    console.log("LISTAAAAAA", lista);
+
+
+    for (let i = 0; i < lista.listProducts.length; i++) { 
+        newProduto.push(lista.listProducts[i]);
     }
-    if (newProduto.length < 1) {
-        const res = await crud.remove(nomeTabela, orderproductsId);
-        return res;
+
+    for (let i = 0; i < newProduto.productId.length; i++) { 
+
     }
-    return newProduto;
+
+
+    // if (newProduto.length < 1) {
+    //     const res = await crud.remove(nomeTabela, orderproductsId);
+    //     return res;
+    // }
+    // return newProduto;
 }
 
 async function mostrarPedidos() {
@@ -201,9 +209,10 @@ async function verificarListaProdutos(list = []) {
     let naoCadastrado = false;
     for (const id of newList) {
         try {
-            console.log("new", newList);
+            console.log("id", id);
             await crud.getById("Products", id);
         } catch (erro) {
+            console.log("Entrou aqui")
             naoCadastrado = true
             return naoCadastrado;
         }
@@ -249,7 +258,7 @@ async function adicionarQuantidade(list) {
     console.log("liss", list);
     const newList = [];
     for (let i = 0; i < list.length; i++) {
-        newList.push(list[i].quantity); 
+        newList.push(list[i].quantity);
         console.log("liss2", list[i].quantity);
     }
 }
