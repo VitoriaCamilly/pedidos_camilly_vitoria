@@ -1,5 +1,7 @@
 const crud = require("../../crud");
 const nomeTabela = "OrdersProducts";
+let newQtd = 0;
+
 
 async function adicionarProdutos(dados = { listProducts: {}, orderId: "" }) {
     console.log("aaaa", dados.productId)
@@ -39,7 +41,10 @@ async function adicionarProdutos(dados = { listProducts: {}, orderId: "" }) {
         }
     }
     if (await mesmoPedido(dados.orderId)) {
-        await adicionarQuantidade(dados.listProducts);
+        console.log("Inicio", dados);
+        console.log("Inicio lista", dados.listProducts);
+        const novaQuantidade = await adicionarQuantidade(dados.listProducts, dados);
+        dados.listProducts = novaQuantidade;
         const add = await adicionarMesmo(dados);
         return add;
     } else {
@@ -54,10 +59,10 @@ async function adicionarMesmo(dados) {
         const pedidos = await crud.save(nomeTabela, undefined, dados);
         return pedidos;
     }
-    const newList = [];
+    const listaAdiciona = [];
     for (let i = 0; i < listaOrdersProducts.length; i++) {
-        newList.push(listaOrdersProducts[i].orderId);
-        if (newList[i] == dados.orderId) {
+        listaAdiciona.push(listaOrdersProducts[i].orderId);
+        if (listaAdiciona[i] == dados.orderId) {
             const pedidos = await crud.save(nomeTabela, listaOrdersProducts[i].id, dados);
             return pedidos;
         }
@@ -128,11 +133,11 @@ async function remover(dados) {
     console.log("LISTAAAAAA", lista);
 
 
-    for (let i = 0; i < lista.listProducts.length; i++) { 
+    for (let i = 0; i < lista.listProducts.length; i++) {
         newProduto.push(lista.listProducts[i]);
     }
 
-    for (let i = 0; i < newProduto.productId.length; i++) { 
+    for (let i = 0; i < newProduto.productId.length; i++) {
 
     }
 
@@ -254,14 +259,62 @@ async function verificarPedidoOrder(orderId) {
     return existe;
 }
 
-async function adicionarQuantidade(list) {
-    console.log("liss", list);
-    const newList = [];
-    for (let i = 0; i < list.length; i++) {
-        newList.push(list[i].quantity);
-        newList.push(list[i].quantity); 
+async function adicionarQuantidade(list, dados) {
+    const listaOrdersProducts = await crud.get(nomeTabela);
+    const listaAdiciona = [];
+    let newList = [];
 
+    for (let i = 0; i < listaOrdersProducts.length; i++) {
+        listaAdiciona.push(listaOrdersProducts[i].orderId);
+        console.log("listaAdiciona", listaAdiciona);
+        if (listaAdiciona[i] == dados.orderId) {
+            const pedidos = await crud.getById(nomeTabela, listaOrdersProducts[i].id);
+            console.log("pedidos", pedidos);
+            for (let m = 0; m < pedidos.listProducts.length; m++) {
+            console.log("newList", newList);
+            newList.push(pedidos.listProducts[m]);
+            console.log("newList", newList);
+            }
+        }
     }
+
+    const produtosList = [];
+    for (let k = 0; k < list.length; k++) {
+        produtosList.push(list[k].productId);
+    }
+    const produtosNewList = [];
+    for (let l = 0; l < newList.length; l++) {
+        produtosNewList.push(newList[l].productId);
+    }
+
+    console.log("listaou", list);
+    for (let i = 0; i < list.length; i++) {
+        console.log("2", newList[i]);
+        if (newList.length > 1) {
+            console.log("4", newList[i]);
+            for (let j = 0; j < newList.length; j++) {
+                console.log("5", newList[j].productId);
+                if (list[i].productId == newList[j].productId) {
+                    console.log("6", newList[j].productId);
+                    newQtd = list[i].quantity + newList[j].quantity;
+                    console.log("7", newQtd);
+                    newList[j].quantity = newQtd;
+                    console.log("8", newList[j].quantity);
+                    console.log("9", newList[j]);
+                    break;
+                }
+                console.log("11", newList);
+            }
+        }
+        if (produtosNewList.indexOf(produtosList[i]) > -1) {
+            console.log("newwww1", produtosNewList.indexOf(list[i]) > -1);
+        } else {
+            console.log("newwww2", newList.indexOf(list[i]) > -1);
+            newList.push(list[i]);
+        }
+    }
+    console.log("12", newList);
+    return newList;
 }
 
 module.exports = {
