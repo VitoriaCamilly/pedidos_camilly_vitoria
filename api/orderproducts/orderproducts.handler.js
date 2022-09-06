@@ -4,7 +4,6 @@ let newQtd = 0;
 
 
 async function adicionarProdutos(dados = { listProducts: {}, orderId: "" }) {
-    console.log("aaaa", dados.productId)
     if (!dados.orderId) {
         return {
             error: "0001",
@@ -120,34 +119,51 @@ async function removerProdutos(dados = { listProducts: {}, orderproductsId: "" }
         }
     }
     const variavel = await crud.getById(nomeTabela, dados.orderproductsId);
-    console.log("var1", variavel);
-    variavel.productId = removido;
-    console.log("var2", variavel);
+    variavel.listProducts = removido;
     await crud.save(nomeTabela, dados.orderproductsId, variavel);
     return variavel;
 }
 
 async function remover(dados) {
-    let newProduto = [];
-    let lista = await crud.getById(nomeTabela, dados.orderproductsId);
-    console.log("LISTAAAAAA", lista);
+    const listaOrdersProducts = await crud.get(nomeTabela);
+    let novaLista = [];
 
-
-    for (let i = 0; i < lista.listProducts.length; i++) {
-        newProduto.push(lista.listProducts[i]);
+    for (let i = 0; i < listaOrdersProducts.length; i++) {
+        const pedidos = await crud.getById(nomeTabela, listaOrdersProducts[i].id);
+        for (let m = 0; m < pedidos.listProducts.length; m++) {
+            novaLista.push(pedidos.listProducts[m]);
+        }
     }
 
-    for (let i = 0; i < newProduto.productId.length; i++) {
-
+    const produtosList = [];
+    for (let k = 0; k < dados.listProducts.length; k++) {
+        produtosList.push(dados.listProducts[k].productId);
+    }
+    const produtosNewList = [];
+    for (let l = 0; l < novaLista.length; l++) {
+        produtosNewList.push(novaLista[l].productId);
     }
 
+    for (let i = 0; i < dados.listProducts.length; i++) {
+        if (novaLista.length > 1) {
+            for (let j = 0; j < novaLista.length; j++) {
+                if (dados.listProducts[i].productId == novaLista[j].productId) {
+                    newQtd = novaLista[j].quantity - dados.listProducts[i].quantity;
+                    if (newQtd <= 0) {
+                       novaLista.splice(j, 1);
+                    } else {
 
-    // if (newProduto.length < 1) {
-    //     const res = await crud.remove(nomeTabela, orderproductsId);
-    //     return res;
-    // }
-    // return newProduto;
+                        novaLista[j].quantity = newQtd;
+                    }
+                    break;
+                }
+            }
+        }
+        return novaLista;
+    }
 }
+
+
 
 async function mostrarPedidos() {
     const mostrar = await crud.get(nomeTabela);
@@ -225,18 +241,6 @@ async function verificarListaProdutos(list = []) {
     return naoCadastrado;
 }
 
-async function verificarProduto(productId) {
-    let naoCadastrado = false;
-    try {
-        await crud.getById("Products", productId);
-    } catch (erro) {
-        naoCadastrado = true
-        return naoCadastrado;
-    }
-    return naoCadastrado;
-}
-
-
 async function verificarPedido(orderproductsId) {
     let existe = false;
     try {
@@ -266,14 +270,10 @@ async function adicionarQuantidade(list, dados) {
 
     for (let i = 0; i < listaOrdersProducts.length; i++) {
         listaAdiciona.push(listaOrdersProducts[i].orderId);
-        console.log("listaAdiciona", listaAdiciona);
         if (listaAdiciona[i] == dados.orderId) {
             const pedidos = await crud.getById(nomeTabela, listaOrdersProducts[i].id);
-            console.log("pedidos", pedidos);
             for (let m = 0; m < pedidos.listProducts.length; m++) {
-            console.log("newList", newList);
-            newList.push(pedidos.listProducts[m]);
-            console.log("newList", newList);
+                newList.push(pedidos.listProducts[m]);
             }
         }
     }
@@ -287,33 +287,22 @@ async function adicionarQuantidade(list, dados) {
         produtosNewList.push(newList[l].productId);
     }
 
-    console.log("listaou", list);
     for (let i = 0; i < list.length; i++) {
-        console.log("2", newList[i]);
         if (newList.length > 1) {
-            console.log("4", newList[i]);
             for (let j = 0; j < newList.length; j++) {
-                console.log("5", newList[j].productId);
                 if (list[i].productId == newList[j].productId) {
-                    console.log("6", newList[j].productId);
                     newQtd = list[i].quantity + newList[j].quantity;
-                    console.log("7", newQtd);
                     newList[j].quantity = newQtd;
-                    console.log("8", newList[j].quantity);
-                    console.log("9", newList[j]);
                     break;
                 }
-                console.log("11", newList);
             }
         }
         if (produtosNewList.indexOf(produtosList[i]) > -1) {
-            console.log("newwww1", produtosNewList.indexOf(list[i]) > -1);
+            console.log("new", produtosNewList.indexOf(list[i]) > -1);
         } else {
-            console.log("newwww2", newList.indexOf(list[i]) > -1);
             newList.push(list[i]);
         }
     }
-    console.log("12", newList);
     return newList;
 }
 
