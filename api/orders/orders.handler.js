@@ -1,6 +1,6 @@
 const crud = require("../../crud");
 const nomeTabela = "Orders";
-let contador = 1; let number; let status; let userId; let dado;
+let number; let status; let userId; let dado;
 
 async function cadastrarPedidos(dados = { userId: "" }) {
     if (!dados.userId) {
@@ -24,13 +24,22 @@ async function cadastrarPedidos(dados = { userId: "" }) {
             situacao: "Este usuário já possui pedidos com o status em aberto"
         }
     }
-    number = contador++;
+    number = await quantidade();
     userId = dados.userId;
     status = "Aberto";
     dado = { number, userId, status };
     const pedidos = await crud.save(nomeTabela, undefined, dado);
     return pedidos;
 }
+
+async function quantidade() {
+    const qtdd = await crud.get(nomeTabela);
+    console.log("quant", qtdd);
+    console.log("leng", qtdd.length);
+    const retorno = qtdd.length;
+    return retorno;
+}
+
 
 async function mostrarPedidos() {
     const mostrar = await crud.get(nomeTabela);

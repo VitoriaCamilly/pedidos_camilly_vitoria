@@ -115,7 +115,7 @@ async function removerProdutos(dados = { listProducts: {}, orderproductsId: "" }
         return {
             error: "0006",
             message: "Not found",
-            situacao: "Este pedido está zerado! Documento removido!"
+            situacao: "Pedido removido!"
         }
     }
     const variavel = await crud.getById(nomeTabela, dados.orderproductsId);
@@ -132,38 +132,49 @@ async function remover(dados) {
         const pedidos = await crud.getById(nomeTabela, listaOrdersProducts[i].id);
         for (let m = 0; m < pedidos.listProducts.length; m++) {
             novaLista.push(pedidos.listProducts[m]);
+            console.log("NovaLista", novaLista);
         }
     }
 
     const produtosList = [];
     for (let k = 0; k < dados.listProducts.length; k++) {
         produtosList.push(dados.listProducts[k].productId);
+        console.log("pordutosList", produtosList);
     }
     const produtosNewList = [];
     for (let l = 0; l < novaLista.length; l++) {
         produtosNewList.push(novaLista[l].productId);
+        console.log("produtosNewList", produtosNewList);
     }
 
     for (let i = 0; i < dados.listProducts.length; i++) {
-        if (novaLista.length > 1) {
+        if (novaLista.length >= 1) {
             for (let j = 0; j < novaLista.length; j++) {
                 if (dados.listProducts[i].productId == novaLista[j].productId) {
                     newQtd = novaLista[j].quantity - dados.listProducts[i].quantity;
-                    if (newQtd <= 0) {
-                       novaLista.splice(j, 1);
-                    } else {
-
-                        novaLista[j].quantity = newQtd;
-                    }
+                    novaLista[j].quantity = newQtd;
                     break;
                 }
             }
         }
-        return novaLista;
     }
+
+    for (let g = 0; g < novaLista.length; g++) {
+        console.log("BBBBBB", novaLista[g].quantity);
+        if (novaLista[g].quantity == 0) {
+            novaLista.splice(g, 1);
+        }
+        if (novaLista[g].quantity <= 0) {
+            novaLista.splice(g, 1);
+        }
+        if (novaLista.length < 1) {
+            const remove = await crud.remove(nomeTabela, dados.orderproductsId);
+            return remove;
+        }
+    }
+
+    return novaLista;
 }
-
-
 
 async function mostrarPedidos() {
     const mostrar = await crud.get(nomeTabela);
@@ -288,7 +299,7 @@ async function adicionarQuantidade(list, dados) {
     }
 
     for (let i = 0; i < list.length; i++) {
-        if (newList.length > 1) {
+        if (newList.length >= 1) {
             for (let j = 0; j < newList.length; j++) {
                 if (list[i].productId == newList[j].productId) {
                     newQtd = list[i].quantity + newList[j].quantity;
