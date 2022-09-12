@@ -36,7 +36,7 @@ async function quantidade() {
     const qtdd = await crud.get(nomeTabela);
     console.log("quant", qtdd);
     console.log("leng", qtdd.length);
-    const retorno = qtdd.length;
+    const retorno = qtdd.length + 1;
     return retorno;
 }
 

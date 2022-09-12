@@ -43,8 +43,18 @@ async function adicionarProdutos(dados = { listProducts: {}, orderId: "" }) {
         console.log("Inicio", dados);
         console.log("Inicio lista", dados.listProducts);
         const novaQuantidade = await adicionarQuantidade(dados.listProducts, dados);
+        console.log("1", novaQuantidade);
         dados.listProducts = novaQuantidade;
-        const add = await adicionarMesmo(dados);
+
+        const add = await adicionarMesmo(dados, novaQuantidade);
+        console.log("2", add);
+        if (add == undefined) {
+            return {
+                error: "0005",
+                message: "Not found",
+                situacao: "Tente Novamente"
+            }
+        }
         return add;
     } else {
         const pedidos = await crud.save(nomeTabela, undefined, dados);
@@ -52,20 +62,38 @@ async function adicionarProdutos(dados = { listProducts: {}, orderId: "" }) {
     }
 }
 
-async function adicionarMesmo(dados) {
+async function adicionarMesmo(dados, novaQuantidade) {
+    console.log("3", dados);
+    const listaAdiciona = [];
     const listaOrdersProducts = await crud.get(nomeTabela);
+    console.log("4", listaOrdersProducts.length);
     if (listaOrdersProducts.length < 1) {
         const pedidos = await crud.save(nomeTabela, undefined, dados);
+        console.log("5", pedidos);
         return pedidos;
     }
-    const listaAdiciona = [];
+
     for (let i = 0; i < listaOrdersProducts.length; i++) {
         listaAdiciona.push(listaOrdersProducts[i].orderId);
+        console.log("7", listaAdiciona);
         if (listaAdiciona[i] == dados.orderId) {
+            dados.quantity == novaQuantidade;
             const pedidos = await crud.save(nomeTabela, listaOrdersProducts[i].id, dados);
+            console.log("6", pedidos);
             return pedidos;
         }
 
+    }
+
+    for (let m = 0; m < listaOrdersProducts.length; m++) {
+        listaAdiciona.push(listaOrdersProducts[m].orderId);
+        console.log("9", listaAdiciona);
+        if (listaAdiciona[m] != dados.orderId) {
+            console.log("10", dados);
+            const pedidos = await crud.save(nomeTabela, undefined, dados);
+            console.log("5", pedidos);
+            return pedidos;
+        }
     }
 }
 
