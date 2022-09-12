@@ -18,6 +18,13 @@ async function adicionarProdutos(dados = { listProducts: {}, orderId: "" }) {
             camposNecessarios: ["listProducts"]
         }
     }
+    if(await verificarQuant(dados.listProducts)){
+        return {
+            error: "0003",
+            message: "Not found",
+            situacao: "Quantidade Indisponivel"
+        }
+    }
     if (await verificarListaProdutos(dados.listProducts)) {
         return {
             error: "0003",
@@ -257,6 +264,19 @@ async function pedidosEmRemove(orderproductsId) {
         return existe;
     }
     return existe;
+}
+
+async function verificarQuant(list = []){
+    const newList = [];
+    for (let i = 0; i < list.length; i++) {
+        newList.push(list[i].quantity);
+        console.log("Foi", newList);
+        if(newList <= 0){
+            console.log("Entrou aqui");
+            return true;
+        }
+    }
+    return false;
 }
 
 async function verificarListaProdutos(list = []) {
